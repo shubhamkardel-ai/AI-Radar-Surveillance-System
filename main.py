@@ -41,6 +41,8 @@ for _ in range(TARGET_COUNT):
         aircraft_type
     )
 
+    aircraft.altitude = random.randint(5000, 40000)
+
     if aircraft_type == "Friendly":
         aircraft.id = f"F-{len([e for e in enemies if e.type == 'Friendly']) + 1:03}"
     elif aircraft_type == "Enemy":
@@ -54,6 +56,8 @@ for _ in range(TARGET_COUNT):
 
 enemy_memory = [0] * len(enemies)
 
+locked_target = None
+
 radar = Radar()
 hub = Hub(font, GREEN)
 effects = Effects()
@@ -63,13 +67,33 @@ running = True
 while running:
 
     for event in pygame.event.get():
+
         if event.type == pygame.QUIT:
             running = False
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+
+            mx, my = pygame.mouse.get_pos()
+
+            for aircraft in enemies:
+
+                dx = aircraft.x - mx
+                dy = aircraft.y - my
+
+                if dx * dx + dy * dy < 25 * 25:
+                    locked_target = aircraft
 
     screen.fill(BLACK)
 
     for enemy in enemies:
         enemy.update()
+
+        if enemy.distance < 120:
+            enemy.threat = "HIGH"
+        elif enemy.distance < 220:
+            enemy.threat = "MEDIUM"
+        else:
+            enemy.threat = "LOW"
 
     effects.draw_scan_lines(screen)
 
@@ -157,6 +181,21 @@ while running:
 
         if enemy_memory[i] > 0:
 
+            if locked_target == enemy:
+                box_size = 24
+
+                pygame.draw.rect(
+                    screen,
+                    RED,
+                    (
+                        int(enemy.x) - box_size // 2,
+                        int(enemy.y) - box_size // 2,
+                        box_size,
+                        box_size
+                    ),
+                    2
+                )
+
             enemy_memory[i] -= 1
 
             glow = pygame.Surface((40, 40), pygame.SRCALPHA)
@@ -187,6 +226,46 @@ while running:
         len(enemies),
         radar.angle
     )
+
+    # Target Information Panel
+    if locked_target:
+
+        panel_x = WIDTH - 260
+        panel_y = 120
+
+        pygame.draw.rect(
+            screen,
+            DARK_GREEN,
+            (panel_x, panel_y, 240, 180),
+            2
+        )
+
+        info_font = pygame.font.SysFont("Consolas", 16)
+
+        lines = [
+            "TARGET INFORMATION",
+            "",
+            f"ID   : {locked_target.id}",
+            f"TYPE : {locked_target.type}",
+            f"SPD  : {locked_target.speed}",
+            f"HDG  : {int(locked_target.heading)}°",
+            f"ALT  : {locked_target.altitude} FT",
+            f"DST  : {locked_target.distance} PX",
+            f"THREAT : {locked_target.threat}",
+            "STATUS : TRACKED"
+        ]
+
+        for i, line in enumerate(lines):
+            text = info_font.render(
+                line,
+                True,
+                GREEN
+            )
+
+            screen.blit(
+                text,
+                (panel_x + 10, panel_y + 10 + i * 20)
+            )
 
     pygame.display.flip()
     clock.tick(FPS)

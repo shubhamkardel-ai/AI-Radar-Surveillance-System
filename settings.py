@@ -13,6 +13,7 @@ BLACK = (5, 5, 5)
 GREEN = (0, 255, 70)
 DARK_GREEN = (0, 60, 0)
 LIGHT_GREEN = (200, 255, 200)
+RED = (255, 0, 0)
 
 # HUD
 TITLE = "Radar Scanner"
