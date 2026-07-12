@@ -56,26 +56,31 @@ class Aircraft:
         if self.y <= 0 or self.y >= HEIGHT:
             self.vy *= -1
 
-        if len(self.trail) > 35:
+        if len(self.trail) > 60:
             self.trail.pop(0)
 
     def draw(self, screen):
 
+        angle = math.radians(self.heading)
+
+        cos_a = math.cos(angle)
+        sin_a = math.sin(angle)
+
         for i, point in enumerate(self.trail):
             alpha = int(255 * (i + 1) / len(self.trail))
 
-            trail_surface = pygame.Surface((6, 6), pygame.SRCALPHA)
+            trail_surface = pygame.Surface((10, 10), pygame.SRCALPHA)
 
             pygame.draw.circle(
                 trail_surface,
                 (*self.color, alpha),
-                (3, 3),
-                2
+                (5, 5),
+                4
             )
 
             screen.blit(
                 trail_surface,
-                (point[0] - 3, point[1] - 3)
+                (point[0] - 5, point[1] - 5)
             )
 
         # Draw aircraft icon
@@ -86,9 +91,22 @@ class Aircraft:
                 screen,
                 self.color,
                 [
-                    (self.x, self.y - 8),
-                    (self.x - 6, self.y + 6),
-                    (self.x + 6, self.y + 6)
+                    (
+                        self.x + (-10) * sin_a,
+                        self.y + (-10) * cos_a
+                    ),
+                    (
+                        self.x + (-7) * cos_a + (8) * sin_a,
+                        self.y + (-7) * sin_a - (8) * cos_a
+                    ),
+                    (
+                        self.x + (4) * sin_a,
+                        self.y - (4) * cos_a
+                    ),
+                    (
+                        self.x + (7) * cos_a + (8) * sin_a,
+                        self.y + (7) * sin_a - (8) * cos_a
+                    )
                 ]
             )
 

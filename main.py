@@ -13,6 +13,7 @@ from effects import Effects
 from settings import WIDTH, HEIGHT, GREEN
 from ai.intent_ai import IntentAnalyzer
 from ai.fusion_ai import SensorFusion
+from ai.command_ai import CommandCenter
 
 pygame.init()
 
@@ -40,7 +41,7 @@ for _ in range(TARGET_COUNT):
     y = CENTER[1] + math.sin(math.radians(angle)) * dist
 
     aircraft_type = random.choice(
-        ["Friendly", "Enemy", "Civilian", "Unknown"]
+        ["Friendly", "Enemy", "Enemy", "Civilian", "Unknown"]
     )
 
     aircraft = Aircraft(
@@ -78,6 +79,7 @@ effects = Effects()
 vision = Vision()
 intent_ai = IntentAnalyzer()
 fusion_ai = SensorFusion()
+command_ai = CommandCenter()
 
 missiles = []
 smoke_particles = []
@@ -91,9 +93,27 @@ explosion_radius = 5
 
 kills = 0
 
+mission_log = [
+    "SYSTEM ONLINE",
+    "RADAR INITIALIZED",
+    "AI ENGINE READY"
+]
+
 missile_ready = True
 reload_time = 3000      # milliseconds (3 seconds)
 last_fire_time = 0
+
+def add_log(message):
+
+    timestamp = time.strftime("%H:%M:%S")
+
+    mission_log.insert(
+        0,
+        f"{timestamp}  {message}"
+    )
+
+    if len(mission_log) > 8:
+        mission_log.pop()
 
 running = True
 
@@ -115,6 +135,8 @@ while running:
                         "target": locked_target
 
                     })
+
+                    add_log(f"MISSILE FIRED -> {locked_target.id}")
 
                     missile_ready = False
                     last_fire_time = current_ticks
@@ -484,15 +506,8 @@ while running:
             if distance <= RADIUS:
                 screen.blit(glow, (x - 20, y - 20))
 
-            if enemy_memory[i] % 2 == 0:
-                if distance <= RADIUS:
-                    if enemy.type == "Enemy":
-
-                        if pygame.time.get_ticks() % 600 < 300:
-                            enemy.draw(screen)
-
-                    else:
-                        enemy.draw(screen)
+            if distance <= RADIUS:
+                enemy.draw(screen)
 
     for missile in missiles[:]:
 
@@ -619,6 +634,33 @@ while running:
         LIGHT_GREEN
     )
 
+    # ===================================
+    # AI Command Banner
+    # ===================================
+
+    if locked_target:
+
+        if locked_target.type == "Enemy":
+            command_status = "STATUS : TRACKING ENEMY"
+            command_color = RED
+
+        elif locked_target.type == "Unknown":
+            command_status = "STATUS : INVESTIGATING"
+            command_color = (255, 255, 0)
+
+        elif locked_target.type == "Friendly":
+            command_status = "STATUS : FRIENDLY AIRCRAFT"
+            command_color = GREEN
+
+        else:
+            command_status = "STATUS : CIVILIAN FLIGHT"
+            command_color = LIGHT_GREEN
+
+    else:
+
+        command_status = "STATUS : SEARCHING"
+        command_color = GREEN
+
     friendly_count = sum(1 for e in enemies if e.type == "Friendly")
     enemy_count = sum(1 for e in enemies if e.type == "Enemy")
     civilian_count = sum(1 for e in enemies if e.type == "Civilian")
@@ -636,6 +678,43 @@ while running:
     screen.blit(
         bearing_text,
         (20, HEIGHT - 35)
+    )
+
+    # ===================================
+    # Draw AI Command Banner
+    # ===================================
+
+    banner_font = pygame.font.SysFont(
+        "Consolas",
+        22,
+        bold=True
+    )
+
+    pygame.draw.line(
+        screen,
+        DARK_GREEN,
+        (20, 20),
+        (730, 20),
+        2
+    )
+
+    banner = banner_font.render(
+        f"AEGISAI DEFENSE GRID    {command_status}",
+        True,
+        command_color
+    )
+
+    screen.blit(
+        banner,
+        (30, 28)
+    )
+
+    pygame.draw.line(
+        screen,
+        DARK_GREEN,
+        (20, 60),
+        (730, 60),
+        2
     )
 
     stats = [
@@ -683,11 +762,120 @@ while running:
             (760, 430 + i * 22)
         )
 
+    # ===================================
+    # MISSION LOG
+    # ===================================
+
+    log_x = 20
+    log_y = HEIGHT - 220
+
+    pygame.draw.rect(
+        screen,
+        DARK_GREEN,
+        (log_x, log_y, 320, 190),
+        2
+    )
+
+    log_title = font.render(
+        "MISSION LOG",
+        True,
+        LIGHT_GREEN
+    )
+
+    screen.blit(
+        log_title,
+        (log_x + 10, log_y + 10)
+    )
+
+    pygame.draw.line(
+        screen,
+        DARK_GREEN,
+        (log_x + 10, log_y + 38),
+        (log_x + 310, log_y + 38),
+        2
+    )
+
+    for i, message in enumerate(mission_log):
+        txt = small_font.render(
+            message,
+            True,
+            GREEN
+        )
+
+        screen.blit(
+            txt,
+            (
+                log_x + 10,
+                log_y + 50 + i * 18
+            )
+        )
+
+    panel_x = WIDTH - 285
+    panel_y = 95
+
+    panel_width = 260
+    panel_height = 540
+
     # Target Information Panel
     if locked_target:
 
-        panel_x = WIDTH - 260
-        panel_y = 120
+        info_font = pygame.font.SysFont("Consolas", 16)
+
+        pygame.draw.rect(
+            screen,
+            DARK_GREEN,
+            (
+                panel_x,
+                panel_y,
+                panel_width,
+                panel_height
+            ),
+            2
+        )
+
+        pygame.draw.rect(
+            screen,
+            (15, 15, 15),
+            (
+                panel_x + 1,
+                panel_y + 1,
+                panel_width - 2,
+                panel_height - 2
+            )
+        )
+
+        pygame.draw.rect(
+            screen,
+            DARK_GREEN,
+            (
+                panel_x,
+                panel_y,
+                panel_width,
+                38
+            )
+        )
+
+        title = info_font.render(
+            "AEGIS AI COMMAND CENTER",
+            True,
+            LIGHT_GREEN
+        )
+
+        screen.blit(
+            title,
+            (
+                panel_x + 12,
+                panel_y + 10
+            )
+        )
+
+        pygame.draw.line(
+            screen,
+            GREEN,
+            (panel_x, panel_y + 38),
+            (panel_x + panel_width, panel_y + 38),
+            2
+        )
 
         pygame.draw.rect(
             screen,
@@ -698,94 +886,206 @@ while running:
 
         info_font = pygame.font.SysFont("Consolas", 16)
 
-        lines = [
-            "TARGET INFORMATION",
-            "",
-            f"ID        : {locked_target.id}",
-            f"TYPE      : {locked_target.type}",
-            f"SPEED     : {locked_target.speed}",
-            f"HEADING   : {int(locked_target.heading)}°",
-            f"ALTITUDE  : {locked_target.altitude} FT",
-            f"DISTANCE  : {int(locked_target.distance)} PX",
+        # ==========================================
+        # AEGISAI COMMAND CENTER TITLE
+        # ==========================================
 
-            "",
+        title_font = pygame.font.SysFont(
+            "Consolas",
+            18,
+            bold=True
+        )
 
-            f"AI SCORE  : {locked_target.threat_score}",
-            f"AI INTENT : {locked_target.intent}",
-            f"THREAT    : {locked_target.threat}",
+        title = title_font.render(
+            "AEGISAI COMMAND CENTER",
+            True,
+            LIGHT_GREEN
+        )
 
-            "",
-            f"CAMERA : {'YES' if locked_target.camera_object else 'NO'}",
+        screen.blit(
+            title,
+            (
+                panel_x + 10,
+                panel_y + 10
+            )
+        )
 
-            "",
-            "STATUS : TRACKED"
+        pygame.draw.line(
+            screen,
+            GREEN,
+            (panel_x + 10, panel_y + 38),
+            (panel_x + 235, panel_y + 38),
+            2
+        )
+
+        recommendations = command_ai.recommend(locked_target)
+
+        screen.blit(
+            info_font.render("TARGET DATA", True, LIGHT_GREEN),
+            (panel_x + 10, panel_y + 52)
+        )
+
+        info = [
+
+            ("TARGET ID", locked_target.id),
+            ("TYPE", locked_target.type),
+            ("ALTITUDE", f"{locked_target.altitude} FT"),
+            ("SPEED", f"{locked_target.speed} KM/H"),
+            ("HEADING", f"{int(locked_target.heading)}°"),
+            ("DISTANCE", f"{int(locked_target.distance)} PX"),
+            ("AI SCORE", f"{locked_target.threat_score}%"),
+            ("AI INTENT", locked_target.intent),
+            ("THREAT", locked_target.threat)
+
         ]
 
-        for i, line in enumerate(lines):
+        y = panel_y + 82
+
+        for label, value in info:
 
             color = GREEN
 
-            if "THREAT :" in line:
+            if label == "THREAT":
 
-                if locked_target.threat == "HIGH":
+                if value == "HIGH":
                     color = RED
 
-                elif locked_target.threat == "MEDIUM":
+                elif value == "MEDIUM":
                     color = (255, 255, 0)
 
-                else:
-                    color = GREEN
-
             text = info_font.render(
-                line,
+                f"{label:<12}: {value}",
                 True,
                 color
             )
 
             screen.blit(
                 text,
-                (panel_x + 10, panel_y + 10 + i * 20)
+                (panel_x + 10, y)
             )
 
-            # ===============================
-            # AI Threat Meter
-            # ===============================
+            y += 24
 
-            bar_x = panel_x + 10
-            bar_y = panel_y + 215
+        pygame.draw.line(
+            screen,
+            DARK_GREEN,
+            (panel_x + 10, panel_y + 285),
+            (panel_x + 235, panel_y + 285),
+            2
+        )
 
-            pygame.draw.rect(
-                screen,
-                DARK_GREEN,
-                (bar_x, bar_y, 200, 18),
-                2
-            )
+        title = info_font.render(
+            "AI RECOMMENDATION",
+            True,
+            LIGHT_GREEN
+        )
 
-            fill_width = int((locked_target.threat_score / 100) * 200)
+        screen.blit(
+            title,
+            (panel_x + 10, panel_y + 270)
+        )
 
-            if locked_target.threat_score >= 80:
-                bar_color = RED
-            elif locked_target.threat_score >= 50:
-                bar_color = (255, 255, 0)
-            else:
-                bar_color = GREEN
-
-            pygame.draw.rect(
-                screen,
-                bar_color,
-                (bar_x, bar_y, fill_width, 18)
-            )
-
-            score_text = info_font.render(
-                f"AI THREAT : {locked_target.threat_score}%",
+        for j, recommendation in enumerate(recommendations):
+            text = info_font.render(
+                "✔ " + recommendation,
                 True,
-                bar_color
+                GREEN
             )
 
             screen.blit(
-                score_text,
-                (bar_x, bar_y + 25)
+                text,
+                (
+                    panel_x + 10,
+                    panel_y + 295 + j * 22
+                )
             )
+
+        pygame.draw.line(
+            screen,
+            DARK_GREEN,
+            (panel_x + 10, panel_y + 390),
+            (panel_x + 235, panel_y + 390),
+            2
+        )
+
+        status_title = info_font.render(
+            "SYSTEM STATUS",
+            True,
+            LIGHT_GREEN
+        )
+
+        screen.blit(
+            status_title,
+            (panel_x + 10, panel_y + 398)
+        )
+
+        status_lines = [
+            "RADAR : ONLINE",
+            "CAMERA : ACTIVE",
+            "AI ENGINE : RUNNING",
+            "SENSOR FUSION : ACTIVE"
+        ]
+
+        for i, status in enumerate(status_lines):
+            txt = info_font.render(
+                status,
+                True,
+                GREEN
+            )
+
+            screen.blit(
+                txt,
+                (
+                    panel_x + 10,
+                    panel_y + 425 + i * 18
+                )
+            )
+
+        # AI Threat Meter
+
+        bar_x = panel_x + 10
+        bar_y = panel_y + 215
+
+        pygame.draw.rect(
+            screen,
+            DARK_GREEN,
+            (panel_x, panel_y, 250, 420),
+            2
+        )
+
+        fill_width = int((locked_target.threat_score / 100) * 200)
+
+        if locked_target.threat_score >= 80:
+            bar_color = RED
+        elif locked_target.threat_score >= 50:
+            bar_color = (255, 255, 0)
+        else:
+            bar_color = GREEN
+
+        pygame.draw.rect(
+            screen,
+            bar_color,
+            (bar_x, bar_y, fill_width, 18)
+        )
+
+        score_text = info_font.render(
+            f"AI THREAT : {locked_target.threat_score}%",
+            True,
+            bar_color
+        )
+
+        screen.blit(
+            score_text,
+            (bar_x, bar_y + 25)
+        )
+
+        pygame.draw.line(
+            screen,
+            DARK_GREEN,
+            (panel_x + 10, panel_y + 255),
+            (panel_x + 235, panel_y + 255),
+            2
+        )
 
     if collision_warning:
         warning = font.render(
