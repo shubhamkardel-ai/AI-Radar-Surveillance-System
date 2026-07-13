@@ -85,6 +85,7 @@ missiles = []
 smoke_particles = []
 explosion_particles = []
 ping_effects = []
+radar_pulse = 0
 missile_speed = 8
 explosion_active = False
 explosion_x = 0
@@ -92,6 +93,10 @@ explosion_y = 0
 explosion_radius = 5
 
 kills = 0
+
+event_log = [
+    "SYSTEM INITIALIZED"
+]
 
 mission_log = [
     "SYSTEM ONLINE",
@@ -136,7 +141,14 @@ while running:
 
                     })
 
+                    event_log.append(
+                        f"{time.strftime('%H:%M:%S')}  MISSILE FIRED -> {locked_target.id}"
+                    )
+
                     add_log(f"MISSILE FIRED -> {locked_target.id}")
+
+                    if len(event_log) > 20:
+                        event_log.pop(0)
 
                     missile_ready = False
                     last_fire_time = current_ticks
@@ -155,6 +167,15 @@ while running:
 
                 if dx * dx + dy * dy < 25 * 25:
                     locked_target = aircraft
+
+                    event_log.append(
+                        f"{time.strftime('%H:%M:%S')}  TARGET LOCKED -> {aircraft.id}"
+                    )
+
+                    add_log(f"TARGET LOCKED -> {aircraft.id}")
+
+                    if len(event_log) > 20:
+                        event_log.pop(0)
 
         if event.type == pygame.MOUSEWHEEL:
 
@@ -373,11 +394,11 @@ while running:
             )
         )
 
-    for i in range(90):
+    for i in range(140):
 
         a = radar.angle + i * 2
 
-        alpha = max(0, 180 - i * 2)
+        alpha = max(0, 220 - i)
 
         sweep = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
 
@@ -399,6 +420,14 @@ while running:
             [p1, p2, p3],
         )
 
+        pygame.draw.line(
+            sweep,
+            (150, 255, 180, alpha),
+            CENTER,
+            p2,
+            2
+        )
+
         screen.blit(sweep, (0, 0))
 
     pygame.draw.circle(
@@ -409,11 +438,108 @@ while running:
         2
     )
 
+    glow = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+
+    pygame.draw.circle(
+        glow,
+        (0, 255, 70, 18),
+        CENTER,
+        RADIUS,
+        8
+    )
+
+    screen.blit(glow, (0, 0))
+
+    pygame.draw.circle(
+        screen,
+        DARK_GREEN,
+        CENTER,
+        RADIUS - 25,
+        1
+    )
+
+    pygame.draw.circle(
+        screen,
+        DARK_GREEN,
+        CENTER,
+        RADIUS - 50,
+        1
+    )
+
+    pygame.draw.line(
+        screen,
+        LIGHT_GREEN,
+        (CENTER[0] - 10, CENTER[1]),
+        (CENTER[0] + 10, CENTER[1]),
+        1
+    )
+
+    pygame.draw.line(
+        screen,
+        LIGHT_GREEN,
+        (CENTER[0], CENTER[1] - 10),
+        (CENTER[0], CENTER[1] + 10),
+        1
+    )
+
+    pulse_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+
+    pygame.draw.circle(
+        pulse_surface,
+        (0, 255, 70, 40),
+        CENTER,
+        int(radar_pulse),
+        2
+    )
+
+    screen.blit(pulse_surface, (0, 0))
+
+    glow = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+
+    pygame.draw.circle(
+        glow,
+        (0, 255, 70, 35),
+        CENTER,
+        RADIUS,
+        8
+    )
+
+    screen.blit(glow, (0, 0))
+
+    pulse = 5 + int(2 * math.sin(pygame.time.get_ticks() * 0.008))
+
     pygame.draw.circle(
         screen,
         LIGHT_GREEN,
         CENTER,
-        5
+        pulse
+    )
+
+    pygame.draw.circle(
+        screen,
+        GREEN,
+        CENTER,
+        12,
+        2
+    )
+
+    pygame.draw.circle(
+        screen,
+        DARK_GREEN,
+        CENTER,
+        20,
+        1
+    )
+
+    pygame.draw.line(
+        screen,
+        GREEN,
+        CENTER,
+        (
+            CENTER[0] + math.cos(math.radians(radar.angle)) * 20,
+            CENTER[1] + math.sin(math.radians(radar.angle)) * 20
+        ),
+        2
     )
 
     for i, enemy in enumerate(enemies):
@@ -434,14 +560,19 @@ while running:
 
         if dif < 2:
 
-            if enemy_memory[i] == 0:
-                sound.play_beep()
+            event_log.append(
+                f"{time.strftime('%H:%M:%S')}  RADAR CONTACT -> {enemy.id}"
+            )
 
-                ping_effects.append([
-                    enemy.x,
-                    enemy.y,
-                    5
-                ])
+            if len(event_log) > 20:
+                event_log.pop(0)
+
+                ping_effects.append({
+                    "x": enemy.x,
+                    "y": enemy.y,
+                    "radius": 5,
+                    "alpha": 255
+                })
 
             enemy_memory[i] = 10
 
@@ -458,6 +589,32 @@ while running:
                         36
                     ),
                     2
+                )
+
+                pygame.draw.circle(
+                    screen,
+                    RED,
+                    (int(enemy.x), int(enemy.y)),
+                    22,
+                    1
+                )
+
+                pygame.draw.circle(
+                    screen,
+                    (255, 60, 60),
+                    (int(enemy.x), int(enemy.y)),
+                    28,
+                    1
+                )
+
+                lock_radius = 30 + int(2 * math.sin(pygame.time.get_ticks() * 0.01))
+
+                pygame.draw.circle(
+                    screen,
+                    RED,
+                    (int(enemy.x), int(enemy.y)),
+                    lock_radius,
+                    1
                 )
 
                 pygame.draw.line(
@@ -491,6 +648,21 @@ while running:
                     (enemy.x, enemy.y + 25),
                     2
                 )
+
+                if (pygame.time.get_ticks() // 300) % 2 == 0:
+                    lock_text = small_font.render(
+                        "LOCKED",
+                        True,
+                        RED
+                    )
+
+                    screen.blit(
+                        lock_text,
+                        (
+                            enemy.x - 28,
+                            enemy.y - 45
+                        )
+                    )
 
             enemy_memory[i] -= 1
 
@@ -557,6 +729,15 @@ while running:
                 enemies.remove(target)
                 kills += 1
 
+                event_log.append(
+                    f"{time.strftime('%H:%M:%S')}  TARGET DESTROYED -> {target.id}"
+                )
+
+                add_log(f"TARGET DESTROYED -> {target.id}")
+
+                if len(event_log) > 20:
+                    event_log.pop(0)
+
             missiles.remove(missile)
 
         pygame.draw.line(
@@ -604,24 +785,35 @@ while running:
 
     for ping in ping_effects[:]:
 
+        surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+
         pygame.draw.circle(
-            screen,
-            LIGHT_GREEN,
-            (int(ping[0]), int(ping[1])),
-            int(ping[2]),
+            surface,
+            (0, 255, 70, ping["alpha"]),
+            (int(ping["x"]), int(ping["y"])),
+            int(ping["radius"]),
             2
         )
 
-        ping[2] += 2
+        screen.blit(surface, (0, 0))
 
-        if ping[2] > 25:
+        ping["radius"] += 2
+        ping["alpha"] -= 15
+
+        if ping["alpha"] <= 0:
             ping_effects.remove(ping)
 
     radar.update()
+
+    radar_pulse += 3
+
+    if radar_pulse > RADIUS:
+        radar_pulse = 0
     
     # Play sound once every full rotation
     if radar.angle == 0:
         sound.play_sweep()
+        radar_pulse = 0
 
     fps = int(clock.get_fps())
     current_time = time.strftime("%H:%M:%S")
@@ -750,6 +942,33 @@ while running:
         f"TIME : {current_time}"
     ]
 
+    # ==========================
+    # AI EVENT LOG
+    # ==========================
+
+    event_title = small_font.render(
+        "AI EVENT LOG",
+        True,
+        LIGHT_GREEN
+    )
+
+    screen.blit(
+        event_title,
+        (20, HEIGHT - 200)
+    )
+
+    for i, event in enumerate(event_log[-6:]):
+        txt = small_font.render(
+            "• " + event,
+            True,
+            GREEN
+        )
+
+        screen.blit(
+            txt,
+            (20, HEIGHT - 175 + i * 20)
+        )
+
     for i, line in enumerate(stats):
         text = small_font.render(
             line,
@@ -768,6 +987,12 @@ while running:
 
     log_x = 20
     log_y = HEIGHT - 220
+
+    pygame.draw.rect(
+        screen,
+        (12, 20, 12),
+        (log_x, log_y, 320, 190)
+    )
 
     pygame.draw.rect(
         screen,
@@ -813,8 +1038,8 @@ while running:
     panel_x = WIDTH - 285
     panel_y = 95
 
-    panel_width = 260
-    panel_height = 540
+    panel_width = 280
+    panel_height = 560
 
     # Target Information Panel
     if locked_target:

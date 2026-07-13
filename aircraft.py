@@ -85,42 +85,129 @@ class Aircraft:
 
         # Draw aircraft icon
 
+        angle = math.radians(-self.heading)
+
+        sin_a = math.sin(angle)
+        cos_a = math.cos(angle)
+
+        def rotate(px, py):
+            return (
+                self.x + px * cos_a - py * sin_a,
+                self.y + px * sin_a + py * cos_a
+            )
+
         if self.type == "Friendly":
 
+            glow = pygame.Surface((40, 40), pygame.SRCALPHA)
+
+            pygame.draw.circle(
+                glow,
+                (0, 255, 70, 60),
+                (20, 20),
+                14
+            )
+
+            screen.blit(
+                glow,
+                (self.x - 20, self.y - 20)
+            )
+
+            # Main body
             pygame.draw.polygon(
                 screen,
                 self.color,
                 [
-                    (
-                        self.x + (-10) * sin_a,
-                        self.y + (-10) * cos_a
-                    ),
-                    (
-                        self.x + (-7) * cos_a + (8) * sin_a,
-                        self.y + (-7) * sin_a - (8) * cos_a
-                    ),
-                    (
-                        self.x + (4) * sin_a,
-                        self.y - (4) * cos_a
-                    ),
-                    (
-                        self.x + (7) * cos_a + (8) * sin_a,
-                        self.y + (7) * sin_a - (8) * cos_a
-                    )
+                    rotate(0, -14),  # Nose
+                    rotate(-4, -4),
+
+                    rotate(-10, 2),  # Left Wing
+
+                    rotate(-4, 8),
+
+                    rotate(0, 12),  # Tail
+
+                    rotate(4, 8),
+
+                    rotate(10, 2),  # Right Wing
+
+                    rotate(4, -4)
                 ]
             )
 
+            # Wings
+            pygame.draw.line(
+                screen,
+                self.color,
+                rotate(-10, 0),
+                rotate(10, 0),
+                2
+            )
+
+            # Tail
+            pygame.draw.line(
+                screen,
+                self.color,
+                rotate(0, 6),
+                rotate(0, 11),
+                2
+            )
+
+            # Cockpit
+            cockpit = rotate(0, -5)
+
+            pygame.draw.circle(
+                screen,
+                (255, 120, 120),
+                (int(cockpit[0]), int(cockpit[1])),
+                2
+            )
         elif self.type == "Enemy":
+
+            angle = math.radians(-self.heading)
+
+            sin_a = math.sin(angle)
+            cos_a = math.cos(angle)
+
+            def rotate(px, py):
+                return (
+                    self.x + px * cos_a - py * sin_a,
+                    self.y + px * sin_a + py * cos_a
+                )
 
             pygame.draw.polygon(
                 screen,
                 self.color,
                 [
-                    (self.x, self.y - 8),
-                    (self.x - 8, self.y),
-                    (self.x, self.y + 8),
-                    (self.x + 8, self.y)
+                    rotate(0, -14),  # Nose
+                    rotate(-5, -3),
+
+                    rotate(-12, 2),  # Left Wing
+
+                    rotate(-5, 6),
+
+                    rotate(-3, 12),  # Left Tail
+
+                    rotate(3, 12),  # Right Tail
+
+                    rotate(5, 6),
+
+                    rotate(12, 2),  # Right Wing
+
+                    rotate(5, -3)
                 ]
+            )
+            glow = pygame.Surface((40, 40), pygame.SRCALPHA)
+
+            pygame.draw.circle(
+                glow,
+                (255, 0, 0, 60),
+                (20, 20),
+                14
+            )
+
+            screen.blit(
+                glow,
+                (self.x - 20, self.y - 20)
             )
 
             if self.camera_object:
@@ -132,27 +219,161 @@ class Aircraft:
                     2
                 )
 
+
+
         elif self.type == "Civilian":
 
+            pygame.draw.polygon(
+
+                screen,
+
+                self.color,
+
+                [
+
+                    rotate(0, -14),  # Nose
+
+                    rotate(-3, -6),
+
+                    rotate(-11, -1),  # Left Wing
+
+                    rotate(-4, 5),
+
+                    rotate(-2, 12),  # Tail
+
+                    rotate(2, 12),
+
+                    rotate(4, 5),
+
+                    rotate(11, -1),  # Right Wing
+
+                    rotate(3, -6)
+
+                ]
+
+            )
+
+            cockpit = rotate(0, -10)
+
             pygame.draw.circle(
+
                 screen,
-                self.color,
-                (int(self.x), int(self.y)),
-                6
+
+                (180, 220, 255),
+
+                (int(cockpit[0]), int(cockpit[1])),
+
+                2
+
             )
 
-        else:
+            pygame.draw.line(
 
-            pygame.draw.rect(
                 screen,
+
                 self.color,
-                (
-                    int(self.x) - 5,
-                    int(self.y) - 5,
-                    10,
-                    10
-                )
+
+                rotate(-12, 0),
+
+                rotate(12, 0),
+
+                2
+
             )
+
+            pygame.draw.line(
+
+                screen,
+
+                self.color,
+
+                rotate(-6, 8),
+
+                rotate(6, 8),
+
+                2
+
+            )
+
+            cockpit = rotate(0, -8)
+
+            pygame.draw.circle(
+
+                screen,
+
+                (180, 220, 255),
+
+                (int(cockpit[0]), int(cockpit[1])),
+
+                2
+
+            )
+
+        pygame.draw.circle(
+
+            screen,
+
+            self.color,
+
+            rotate(0, 0),
+
+            7,
+
+            2
+
+        )
+
+        pygame.draw.circle(
+
+            screen,
+
+            self.color,
+
+            rotate(0, 0),
+
+            3
+
+        )
+
+        pygame.draw.line(
+
+            screen,
+
+            self.color,
+
+            rotate(-8, 0),
+
+            rotate(8, 0),
+
+            2
+
+        )
+
+        pygame.draw.arc(
+
+            screen,
+
+            self.color,
+
+            (
+
+                self.x - 8,
+
+                self.y - 8,
+
+                16,
+
+                16
+
+            ),
+
+            0,
+
+            math.pi,
+
+            1
+
+        )
 
         arrow_length = 15
 
