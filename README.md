@@ -1,341 +1,555 @@
 # 🛡️ AegisAI
-### AI-Powered 2D Radar Surveillance & Threat Detection System
 
 <p align="center">
 
-![Python](https://img.shields.io/badge/Python-3.11-blue?style=for-the-badge&logo=python)
-![Pygame](https://img.shields.io/badge/Pygame-2.x-green?style=for-the-badge)
-![YOLOv8](https://img.shields.io/badge/YOLOv8-Ultralytics-red?style=for-the-badge)
-![OpenCV](https://img.shields.io/badge/OpenCV-Computer%20Vision-blue?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-Completed-success?style=for-the-badge)
+<img src="images/aegisai.gif" width="850">
 
 </p>
 
----
 
-# 🚀 Overview
+<h3 align="center">
 
-**AegisAI** is an AI-powered real-time radar surveillance simulator inspired by modern military defense systems.
+🚀 AI-Powered Radar Surveillance & Threat Analysis System
 
-The project combines:
+</h3>
 
-- 📡 Radar Tracking
-- 🤖 Artificial Intelligence
-- 🎯 Threat Analysis
-- 👁️ Computer Vision (YOLOv8)
-- 🚀 Missile Guidance
-- 🛰️ Sensor Fusion
-- 💻 Tactical Command Center
 
-into a single interactive defense simulation built entirely in **Python**.
+<p align="center">
 
----
+<img src="https://readme-typing-svg.herokuapp.com?font=Orbitron&size=25&duration=2500&pause=800&color=00FF66&center=true&vCenter=true&width=700&lines=AI+Surveillance+System;Real-Time+Radar+Tracking;Threat+Detection+Simulation;Autonomous+Command+Center">
 
-# ✨ Features
+</p>
 
-## 📡 Radar Engine
 
-- Real-time rotating radar sweep
-- Dynamic radar pulse
-- Zoomable radar range
-- Compass & Bearing System
-- Radar rings
-- Aircraft trails
-- Radar contact detection
+<p align="center">
+
+<img src="https://img.shields.io/badge/Python-3.11-blue?style=for-the-badge&logo=python">
+
+<img src="https://img.shields.io/badge/Pygame-2.x-green?style=for-the-badge">
+
+<img src="https://img.shields.io/badge/AI-Threat%20Analysis-purple?style=for-the-badge">
+
+<img src="https://img.shields.io/badge/Computer%20Vision-OpenCV-orange?style=for-the-badge">
+
+<img src="https://img.shields.io/badge/Version-v2.0-success?style=for-the-badge">
+
+</p>
+
 
 ---
 
-## ✈ Aircraft Simulation
+# 🌐 Overview
 
-Supports four aircraft types:
 
-- 🟢 Friendly
-- 🔴 Enemy
-- 🔵 Civilian
-- 🟡 Unknown
+<p align="center">
 
-Each aircraft includes:
+<img src="images/dashboard.gif" width="700">
 
-- Heading
-- Speed
-- Altitude
-- Flight trail
-- Future path prediction
-- Unique ID
+</p>
 
----
 
-## 🤖 AI Threat Analysis
+**AegisAI** is an AI-inspired real-time radar surveillance and threat analysis simulation platform built using Python and Pygame.
 
-Every aircraft is analyzed using AI.
 
-Threat calculation uses:
+The project simulates a futuristic defense command system capable of:
 
-- Distance
-- Aircraft type
-- Speed
-- Movement direction
+- 📡 Radar monitoring
+- 🎯 Aircraft tracking
+- 🤖 Threat evaluation
+- 🖥 Tactical HUD visualization
+- 🚨 Real-time alerts
+- 🚀 Interception simulation
 
-Threat Levels:
 
-- 🟢 LOW
-- 🟡 MEDIUM
-- 🔴 HIGH
+AegisAI focuses on combining **Artificial Intelligence concepts, computer graphics, and real-time simulation architecture** into a single intelligent monitoring environment.
+
 
 ---
 
-## 🧠 AI Intent Prediction
+# 🧠 Core Features
 
-AegisAI predicts aircraft behavior.
 
-Examples:
+## 📡 Advanced Radar Engine
 
-- APPROACHING
-- PATROLLING
-- LEAVING AREA
-- MOVING IN
-- SUSPICIOUS
 
----
+<p align="center">
 
-## 👁 Computer Vision
+<img src="images/radar.gif" width="600">
 
-Integrated with:
+</p>
 
-- YOLOv8
-- OpenCV
-
-Capabilities:
-
-- Live webcam detection
-- Object recognition
-- Bounding boxes
-- Confidence score
-- Sensor Fusion
-
----
-
-## 🎯 Target Lock System
 
 Features:
 
-- Auto Target Lock
-- Manual Mouse Selection
-- Animated Lock Indicator
-- Lock Rings
-- Lock Box
-- Blinking LOCKED Label
+✔ Circular radar visualization
+
+✔ Dynamic scanning beam
+
+✔ Target detection
+
+✔ Distance calculation
+
+✔ Motion tracking
+
+✔ Contact indicators
+
+✔ Radar pulse effects
+
 
 ---
 
-## 🚀 Missile System
+# ✈️ Intelligent Aircraft Tracking
 
-- Missile launch
-- Guided tracking
-- Smoke trail
-- Explosion effect
-- Kill confirmation
-- Missile reload timer
 
----
+Every detected object contains:
 
-## 💥 Visual Effects
 
-- Radar glow
-- Sweep animation
-- Pulse animation
-- Explosion particles
-- Smoke particles
-- Aircraft glow
-- Radar ping animation
+```
+Target ID
 
----
+Position
 
-## 🛰 Tactical Command Center
+Velocity
 
-Displays:
+Direction
 
-- Target ID
-- Threat Score
-- AI Intent
-- Altitude
-- Heading
-- Speed
-- Recommendations
-- System Status
+Distance
 
----
+Threat Level
 
-## 📋 Mission Log
+Status
+```
 
-Tracks:
 
-- System startup
-- Target lock
-- Missile launch
-- Target destruction
+Example:
+
+
+```
+AIRCRAFT-07
+
+Distance: 14 KM
+
+Speed: 420 KM/H
+
+Direction: NORTH-EAST
+
+Threat: HIGH
+```
+
 
 ---
 
-## 📜 Event Log
+# 🤖 AI Threat Analysis Engine
 
-Records:
 
-- Radar contacts
-- Lock events
-- Missile firing
-- Enemy destruction
+AegisAI evaluates possible threats using:
+
+
+```
+Threat Score
+
+=
+
+Distance
+
++
+
+Velocity
+
++
+
+Direction
+
++
+
+Movement Pattern
+
+```
+
+
+Threat Classification:
+
+
+```
+LOW
+
+MEDIUM
+
+HIGH
+
+CRITICAL
+```
+
 
 ---
 
-# 🏗 Project Structure
+# 🎯 Target Lock System
+
+
+Detection Pipeline:
+
+
+```
+Unknown Object
+
+        ↓
+
+Tracking Engine
+
+        ↓
+
+Threat Evaluation
+
+        ↓
+
+Target Lock
+
+        ↓
+
+Response Simulation
+
+```
+
+
+Capabilities:
+
+
+✔ Automatic tracking
+
+✔ Target selection
+
+✔ Lock indicator
+
+✔ Real-time updates
+
+
+---
+
+# 🚀 Missile Interception Simulation
+
+
+<p align="center">
+
+<img src="images/missile.gif" width="600">
+
+</p>
+
+
+Simulation includes:
+
+
+🔥 Missile launch sequence
+
+🔥 Target following
+
+🔥 Smoke effects
+
+🔥 Explosion animation
+
+🔥 Interception result
+
+
+---
+
+# 🖥 Tactical HUD Interface
+
+
+The command interface displays:
+
+
+```
+====================
+
+AEGISAI COMMAND SYSTEM
+
+TARGET : AIRCRAFT-03
+
+STATUS : TRACKING
+
+ALTITUDE : 12000 FT
+
+SPEED : 430 KM/H
+
+THREAT : HIGH
+
+====================
+```
+
+
+---
+
+# 🏗 System Architecture
+
+
+<p align="center">
+
+<img src="images/architecture.png" width="750">
+
+</p>
+
+
+Architecture:
+
+
+```
+                 AegisAI
+
+
+                    |
+
+              Main Engine
+
+
+                    |
+
+ ---------------------------------
+
+ |              |                |
+
+Radar       AI Engine        Interface
+
+
+ |              |                |
+
+Tracking   Threat Model       HUD
+
+
+                    |
+
+            Mission Controller
+
+                    |
+
+          Event Logger System
+
+```
+
+
+---
+
+# 📂 Project Structure
+
 
 ```
 AegisAI
+
 │
+
 ├── main.py
-├── aircraft.py
+
 ├── radar.py
-├── settings.py
-├── vision.py
-├── sound.py
-├── hub.py
+
+├── aircraft.py
+
+├── missile.py
+
 ├── effects.py
+
+├── sound.py
+
 │
+
 ├── ai/
-│   ├── intent_ai.py
-│   ├── fusion_ai.py
-│   └── command_ai.py
+
+│   ├── tracking_ai.py
+
+│   ├── threat_engine.py
+
+│   └── prediction.py
+
 │
+
 ├── assets/
+
 │
-└── README.md
+
+└── images/
+
 ```
 
----
-
-# 🛠 Technologies Used
-
-- Python
-- Pygame
-- OpenCV
-- YOLOv8
-- Ultralytics
-- Object-Oriented Programming
-- Artificial Intelligence
-- Computer Vision
 
 ---
 
 # 🎮 Controls
 
+
 | Key | Action |
-|------|--------|
-| Mouse Click | Lock Target |
-| SPACE | Fire Missile |
+|-|-|
+| Mouse Click | Select Target |
+| SPACE | Launch Missile |
 | Mouse Wheel | Radar Zoom |
-| Q | Close Vision Window |
+| ESC | Exit System |
+
 
 ---
 
-# 📷 Screenshots
+# 🛣 Development Roadmap
 
-## Radar Overview
 
-> *(Add screenshot here)*
+## ✅ AegisAI v2.0
 
-```
-images/radar.png
-```
+Completed:
 
----
 
-## AI Command Center
+✔ Radar Simulation
 
-> *(Add screenshot here)*
+✔ Aircraft Tracking
 
-```
-images/command_center.png
-```
+✔ HUD Interface
 
----
+✔ Threat Indicators
 
-## Missile Launch
+✔ Missile Simulation
 
-> *(Add screenshot here)*
+✔ Sound System
 
-```
-images/missile.png
-```
+✔ Modular Architecture
+
 
 ---
 
-## YOLO Vision
 
-> *(Add screenshot here)*
+# 🚀 AegisAI v2.5
+
+
+In Development:
+
+
+⬜ Advanced Threat Prediction
+
+⬜ Multiple Radar Systems
+
+⬜ Target Priority Algorithm
+
+⬜ Mission Replay System
+
+⬜ Analytics Dashboard
+
+
+---
+
+
+# 🧠 AegisAI v3.0 Vision
+
+
+Future AI Command Center:
+
 
 ```
-images/vision.png
+Generative AI Commander
+
+        +
+
+Voice Control
+
+        +
+
+Computer Vision Detection
+
+        +
+
+Drone Simulation
+
+        +
+
+3D Radar Environment
+
+        +
+
+Autonomous Decision System
+
 ```
 
----
-
-# 📈 Future Improvements
-
-- Multiple radar stations
-- Networked surveillance
-- Drone swarm detection
-- Satellite integration
-- Terrain mapping
-- Voice command system
-- Multi-monitor support
-- AI threat learning
 
 ---
 
-# 🎯 Learning Outcomes
+# 🛠 Technology Stack
 
-This project demonstrates knowledge of:
 
-- Artificial Intelligence
-- Computer Vision
-- Python Programming
-- Pygame
-- Real-Time Simulation
-- Object-Oriented Design
-- Radar Visualization
-- Sensor Fusion
-- Software Architecture
+| Area | Technology |
+|-|-|
+| Programming | Python |
+| Simulation | Pygame |
+| Graphics | Computer Graphics |
+| AI Logic | Machine Learning Concepts |
+| Vision | OpenCV (Future Module) |
+| Data Storage | SQLite |
+| Architecture | Modular Design |
+
 
 ---
 
-# 👨‍💻 Author
+# 📸 Demo Gallery
 
-## **Shubham Kardel**
 
-Aspiring AI/ML Engineer
+| Module | Preview |
+|-|-|
+| Radar System | radar.gif |
+| Missile System | missile.gif |
+| Command HUD | dashboard.gif |
+| Complete System | aegisai.gif |
 
-- Python Developer
-- Computer Vision Enthusiast
-- AI Research Learner
-- MCA (AI & Data Science)
+
+---
+
+# 💼 Engineering Skills Demonstrated
+
+
+Through AegisAI:
+
+
+✔ Artificial Intelligence
+
+✔ Real-Time Simulation
+
+✔ Object Tracking
+
+✔ Event Driven Programming
+
+✔ Software Architecture
+
+✔ Data Visualization
+
+✔ Computer Graphics
+
+✔ Python Development
+
+
+---
+
+# 👨‍💻 Developer
+
+
+## Shubham Kardel
+
+
+**AI/ML Engineer | Python Developer | MCA AI & Data Science Student**
+
 
 GitHub:
-**https://github.com/shubhamkardel-ai**
+
+https://github.com/shubhamkardel-ai
+
 
 LinkedIn:
-**https://www.linkedin.com/in/shubham-kardel-303356312/**
+
+https://linkedin.com/in/shubham-kardel-303356312
+
 
 ---
 
-# ⭐ If you like this project
+# ⭐ Support
 
-Please consider giving it a ⭐ on GitHub.
 
-It motivates future development and helps others discover the project.
+If you find AegisAI interesting, consider giving this repository a ⭐
+
 
 ---
 
-# 🛡️ AegisAI
+<h3 align="center">
 
-*"Intelligent Surveillance. Real-Time Decisions."*
+🛡️ AegisAI
+
+"Intelligent Surveillance. Real-Time Decisions."
+
+</h3>
