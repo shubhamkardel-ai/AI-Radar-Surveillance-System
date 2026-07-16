@@ -6,14 +6,22 @@ import time
 import cv2
 from vision import Vision
 from settings import *
-from aircraft import Aircraft
-from radar import Radar
+from core.aircraft import Aircraft
 from hub import Hub
 from effects import Effects
-from settings import WIDTH, HEIGHT, GREEN
 from ai.intent_ai import IntentAnalyzer
 from ai.fusion_ai import SensorFusion
 from ai.command_ai import CommandCenter
+from ai.threat_engine import ThreatEngine
+from utils.constants import *
+from utils.config import *
+from utils.helpers import *
+from core.radar_engine import RadarEngine
+from core.tracker import Tracker
+from ui.radar_renderer import RadarRenderer
+from ui.panel_renderer import PanelRenderer
+from ui.mission_renderer import MissionRenderer
+from ui.hud_renderer import HUDRenderer
 
 pygame.init()
 
@@ -27,6 +35,13 @@ small_font = pygame.font.SysFont("Consolas", 14)
 CENTER = (WIDTH // 2, HEIGHT // 2)
 
 RADIUS = RADAR_RADIUS
+
+radar_engine = RadarEngine(
+    CENTER[0],
+    CENTER[1],
+    RADIUS
+)
+
 zoom = 1.0
 MIN_RADIUS = 180
 MAX_RADIUS = 420
@@ -73,13 +88,18 @@ auto_lock = True
 collision_warning = False
 collision_text = ""
 
-radar = Radar()
 hub = Hub(font, GREEN)
 effects = Effects()
 vision = Vision()
 intent_ai = IntentAnalyzer()
 fusion_ai = SensorFusion()
 command_ai = CommandCenter()
+tracker = Tracker()
+radar_renderer = RadarRenderer()
+panel_renderer = PanelRenderer()
+threat_engine = ThreatEngine()
+mission_renderer = MissionRenderer()
+hud_renderer = HUDRenderer()
 
 missiles = []
 smoke_particles = []
@@ -196,7 +216,117 @@ while running:
         vision.detections
     )
 
+    for detection in vision.detections:
+
+        print(
+            detection["center_x"],
+            detection["center_y"]
+        )
+
+        tracker.create_track(
+            detection["center_x"],
+            detection["center_y"],
+            detection["name"]
+        )
+
+        print("Tracks:", len(tracker.get_tracks()))
+
+        for t in tracker.get_tracks():
+            print(t.id, t.x, t.y)
+
+        for track in tracker.get_tracks():
+            threat_engine.evaluate(track)
+
+        if detection["name"] == "person":
+            locked_target = detection
+
     screen.fill(BLACK)
+
+    radar_renderer.draw_trail(
+        screen,
+        track
+    )
+
+    # ===============================
+    # Draw AI Tracks
+    # ===============================
+
+    for track in tracker.get_tracks():
+        radar_renderer.draw_trail(
+            screen,
+            track
+        )
+
+        radar_renderer.draw_track(
+            screen,
+            track,
+            small_font
+        )
+
+    ai_alert = None
+
+    for detection in vision.detections:
+        cx = detection["center_x"]
+        cy = detection["center_y"]
+
+        radar_x = int((cx / frame.shape[1]) * RADIUS * 2)
+        radar_y = int((cy / frame.shape[0]) * RADIUS * 2)
+
+        radar_x = CENTER[0] - RADIUS + radar_x
+        radar_y = CENTER[1] - RADIUS + radar_y
+
+        pygame.draw.circle(
+            screen,
+            (0, 255, 255),
+            (radar_x, radar_y),
+            5
+        )
+
+        if locked_target == detection:
+            radar_renderer.draw_lock_ring(
+
+                screen,
+
+                radar_x,
+
+                radar_y
+
+            )
+        name = detection["name"]
+
+        if name == "person":
+            color = (255, 255, 0)
+            threat = "MED"
+
+        elif name in ["knife", "gun", "scissors"]:
+            color = (255, 0, 0)
+            threat = "HIGH"
+
+            ai_alert = f"HIGH THREAT DETECTED : {name.upper()}"
+
+        else:
+            color = (0, 255, 255)
+            threat = "LOW"
+
+        pygame.draw.circle(
+            screen,
+            color,
+            (radar_x, radar_y),
+            5
+        )
+
+        label = small_font.render(
+            f"{name} [{threat}]",
+            True,
+            color
+        )
+
+        screen.blit(
+            label,
+            (radar_x + 8, radar_y - 8)
+        )
+
+    tracker.update_tracks()
 
     for enemy in enemies:
 
@@ -221,7 +351,7 @@ while running:
 
             locked_target = nearest
 
-        enemy.update()
+        enemy.update(CENTER)
 
         enemy.intent = intent_ai.analyze(enemy)
 
@@ -396,7 +526,7 @@ while running:
 
     for i in range(140):
 
-        a = radar.angle + i * 2
+        a = radar_engine.get_angle() + i * 2
 
         alpha = max(0, 220 - i)
 
@@ -536,8 +666,8 @@ while running:
         GREEN,
         CENTER,
         (
-            CENTER[0] + math.cos(math.radians(radar.angle)) * 20,
-            CENTER[1] + math.sin(math.radians(radar.angle)) * 20
+            CENTER[0] + math.cos(math.radians(radar_engine.get_angle())) * 20,
+            CENTER[1] + math.sin(math.radians(radar_engine.get_angle())) * 20
         ),
         2
     )
@@ -556,7 +686,7 @@ while running:
             math.atan2(CENTER[1] - y, x - CENTER[0])
         )
 
-        dif = abs((radar.angle - enemy_angle + 100) % 360 - 100)
+        dif = abs((radar_engine.get_angle() - enemy_angle + 100) % 360 - 100)
 
         if dif < 2:
 
@@ -803,7 +933,7 @@ while running:
         if ping["alpha"] <= 0:
             ping_effects.remove(ping)
 
-    radar.update()
+    radar_engine.update()
 
     radar_pulse += 3
 
@@ -811,14 +941,14 @@ while running:
         radar_pulse = 0
     
     # Play sound once every full rotation
-    if radar.angle == 0:
+    if radar_engine.get_angle() == 0:
         sound.play_sweep()
         radar_pulse = 0
 
     fps = int(clock.get_fps())
     current_time = time.strftime("%H:%M:%S")
 
-    bearing = int(radar.angle) % 360
+    bearing = int(radar_engine.get_angle()) % 360
 
     bearing_text = font.render(
         f"BEARING : {bearing:03}°",
@@ -864,8 +994,48 @@ while running:
         screen,
         fps,
         len(enemies),
-        radar.angle
+        radar_engine.get_angle()
     )
+
+    camera_text = font.render(
+        f"CAMERA OBJECTS : {len(vision.detections)}",
+        True,
+        LIGHT_GREEN
+    )
+
+    screen.blit(
+        camera_text,
+        (20, 70)
+    )
+
+    y_offset = 95
+
+    for detection in vision.detections:
+        object_text = font.render(
+            f"{detection['name']} ({int(detection['confidence'] * 100)}%)",
+            True,
+            GREEN
+        )
+
+        screen.blit(
+            object_text,
+            (20, y_offset)
+        )
+
+        y_offset += 28
+
+        object_text = font.render(
+            f"{detection['name']} ({int(detection['confidence'] * 100)}%)",
+            True,
+            GREEN
+        )
+
+        screen.blit(
+            object_text,
+            (20, y_offset)
+        )
+
+        y_offset += 20
 
     screen.blit(
         bearing_text,
@@ -981,59 +1151,15 @@ while running:
             (760, 430 + i * 22)
         )
 
-    # ===================================
-    # MISSION LOG
-    # ===================================
-
-    log_x = 20
-    log_y = HEIGHT - 220
-
-    pygame.draw.rect(
-        screen,
-        (12, 20, 12),
-        (log_x, log_y, 320, 190)
-    )
-
-    pygame.draw.rect(
-        screen,
-        DARK_GREEN,
-        (log_x, log_y, 320, 190),
-        2
-    )
-
-    log_title = font.render(
-        "MISSION LOG",
-        True,
-        LIGHT_GREEN
-    )
-
-    screen.blit(
-        log_title,
-        (log_x + 10, log_y + 10)
-    )
-
-    pygame.draw.line(
-        screen,
-        DARK_GREEN,
-        (log_x + 10, log_y + 38),
-        (log_x + 310, log_y + 38),
-        2
-    )
-
-    for i, message in enumerate(mission_log):
-        txt = small_font.render(
-            message,
-            True,
-            GREEN
+        mission_renderer.draw_mission_log(
+            screen,
+            mission_log,
+            font,
+            small_font,
+            GREEN,
+            DARK_GREEN
         )
 
-        screen.blit(
-            txt,
-            (
-                log_x + 10,
-                log_y + 50 + i * 18
-            )
-        )
 
     panel_x = WIDTH - 285
     panel_y = 95
@@ -1110,10 +1236,6 @@ while running:
         )
 
         info_font = pygame.font.SysFont("Consolas", 16)
-
-        # ==========================================
-        # AEGISAI COMMAND CENTER TITLE
-        # ==========================================
 
         title_font = pygame.font.SysFont(
             "Consolas",
@@ -1374,6 +1496,44 @@ while running:
 
         if cv2.waitKey(1) & 0xFF == ord("q"):
             running = False
+
+    if ai_alert:
+        pygame.draw.rect(
+            screen,
+            RED,
+            (180, 10, 640, 40)
+        )
+
+        alert_text = font.render(
+            ai_alert,
+            True,
+            BLACK
+        )
+
+        screen.blit(
+            alert_text,
+            (200, 20)
+        )
+    tracks = tracker.get_tracks()
+
+    if tracks:
+        panel_renderer.draw_track_panel(
+
+            screen,
+
+            tracks[0],
+
+            font,
+
+            small_font,
+
+            WIDTH,
+
+            GREEN,
+
+            LIGHT_GREEN
+
+        )
 
     pygame.display.flip()
     clock.tick(FPS)

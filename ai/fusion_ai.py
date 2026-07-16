@@ -1,40 +1,26 @@
 class SensorFusion:
 
     def __init__(self):
-        self.matches = []
+        self.targets = []
 
-    def fuse(self, aircrafts, detections):
+    def fuse(self, enemies, detections):
+        """
+        Fuse radar targets with vision detections.
+        """
 
-        self.matches.clear()
+        self.targets = detections
 
-        for aircraft in aircrafts:
+        for enemy in enemies:
 
-            best = None
+            enemy.detected = False
 
             for detection in detections:
 
-                name = detection["name"]
+                dx = enemy.x - detection["center_x"]
+                dy = enemy.y - detection["center_y"]
 
-                if aircraft.type == "Enemy":
+                if dx * dx + dy * dy < 50 * 50:
+                    enemy.detected = True
 
-                    if name in ["person", "car", "truck", "bus"]:
-
-                        best = detection
-                        break
-
-                elif aircraft.type == "Friendly":
-
-                    if name == "person":
-                        best = detection
-                        break
-
-            aircraft.camera_object = best
-
-            self.matches.append(
-                {
-                    "aircraft": aircraft,
-                    "camera": best
-                }
-            )
-
-        return self.matches
+    def get_targets(self):
+        return self.targets
